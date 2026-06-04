@@ -113,6 +113,36 @@
             <version>3.3.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.12.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.12.7</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.12.7</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>secretsmanager</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -164,11 +194,11 @@
                             <generatorName>spring</generatorName>
 
                             <apiPackage>
-                                com.fredfmelo.paymentservice.api
+                                com.fredfmelo.authservice.api
                             </apiPackage>
 
                             <modelPackage>
-                                com.fredfmelo.paymentservice.model
+                                com.fredfmelo.authservice.model
                             </modelPackage>
 
                             <configOptions>

@@ -1,6 +1,6 @@
 spring:
   application:
-    name: payment-service
+    name: auth-service
 
 management:
   endpoints:
@@ -9,17 +9,10 @@ management:
         include: health    
 
 server:
-  port: 8081
+  port: 8085
   servlet:
-    context-path: /api/payment-service/v1
+    context-path: /api/auth-service/v1
 
 aws:
   dynamodb:
-    table-name: PAYMENT
-
-  sns:
-    order-topic-arn: arn:aws:sns:us-east-1:200849340204:order-events
-
-  sqs:
-    payment-queue: payment-queue
-
+    table-name: AUTH_USER
