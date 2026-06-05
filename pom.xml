@@ -143,6 +143,12 @@
             <artifactId>secretsmanager</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
     </dependencies>
 
     <build>
@@ -214,7 +220,40 @@
 
                     </execution>
                 </executions>
+            </plugin>
 
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>1.19.4</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-junit5-plugin</artifactId>
+                        <version>1.2.3</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <targetClasses>
+                        <param>com.fredfmelo.authservice.*</param>
+                    </targetClasses>
+                    <targetTests>
+                        <param>com.fredfmelo.authservice.*</param>
+                    </targetTests>
+                    <excludedClasses>
+                        <param>*.api.*</param>
+                        <param>*.controller.*</param>
+                        <param>*.repository.*</param>
+                        <param>*.entity.*</param>
+                        <param>*.model.*</param>
+                        <param>*.config.*</param>
+                        <param>*Application</param>
+                    </excludedClasses>
+                    <threads>4</threads>
+                    <outputFormats>
+                        <param>HTML</param>
+                    </outputFormats>
+                </configuration>
             </plugin>
 
         </plugins>

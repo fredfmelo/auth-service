@@ -16,3 +16,6 @@ server:
 aws:
   dynamodb:
     table-name: AUTH_USER
+
+jwt:
+  expiration-seconds: 3600

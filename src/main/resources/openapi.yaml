@@ -12,7 +12,6 @@ tags:
   - name: Authentication
 
 paths:
-
   /auth/register:
     post:
       tags:
@@ -24,17 +23,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterRequest'
+              $ref: "#/components/schemas/RegisterRequest"
       responses:
-        '201':
+        "201":
           description: User successfully registered
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RegisterResponse'
-        '400':
+                $ref: "#/components/schemas/RegisterResponse"
+        "400":
           description: Invalid request
-        '409':
+        "409":
           description: User already exists
 
   /auth/login:
@@ -48,19 +47,34 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
+              $ref: "#/components/schemas/LoginRequest"
       responses:
-        '200':
+        "200":
           description: Authentication successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponse'
-        '401':
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
           description: Invalid credentials
 
-components:
+  /auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get authenticated user information
+      operationId: me
+      responses:
+        "200":
+          description: Current authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeResponse"
+        "401":
+          description: Unauthorized
 
+components:
   schemas:
 
     RegisterRequest:
@@ -91,7 +105,9 @@ components:
           example: john.doe@email.com
         role:
           type: string
-          example: CUSTOMER
+          enum:
+            - CUSTOMER
+            - ADMIN
         createdAt:
           type: string
           format: date-time
@@ -122,3 +138,14 @@ components:
         expiresIn:
           type: integer
           example: 3600
+
+    MeResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        role:
+          type: string

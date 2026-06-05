@@ -15,12 +15,19 @@ import lombok.Setter;
 public class ServiceConfig implements DynamoProperties {
 
     private Aws aws;
+    private Jwt jwt;
 
     @Getter
     @Setter
     public static class Aws {
         private DynamoDb dynamodb;
         private Sns sns;
+    }
+
+    @Getter
+    @Setter
+    public static class Jwt{
+        private long expirationSeconds;
     }
 
     @Getter

@@ -8,6 +8,7 @@ import com.fredfmelo.authservice.api.AuthenticationApi;
 import com.fredfmelo.authservice.auth.service.AuthService;
 import com.fredfmelo.authservice.model.LoginRequest;
 import com.fredfmelo.authservice.model.LoginResponse;
+import com.fredfmelo.authservice.model.MeResponse;
 import com.fredfmelo.authservice.model.RegisterRequest;
 import com.fredfmelo.authservice.model.RegisterResponse;
 
@@ -29,6 +30,14 @@ public class AuthenticationControllerImpl implements AuthenticationApi {
 
     @Override
     public ResponseEntity<LoginResponse> login(LoginRequest loginRequest) {
+        loginRequest.setEmail(loginRequest.getEmail().trim().toLowerCase());
+
         return ResponseEntity.ok(authService.login(loginRequest));
     }
+
+    @Override
+    public ResponseEntity<MeResponse> me(){
+        return ResponseEntity.ok(authService.me());
+    }
+
 }

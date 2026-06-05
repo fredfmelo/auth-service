@@ -1,22 +1,21 @@
 package com.fredfmelo.authservice.auth.service;
 
-import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.Date;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.fredfmelo.authservice.auth.entity.Role;
 import com.fredfmelo.authservice.auth.entity.UserEntity;
-import com.fredfmelo.authservice.config.SecretsManagerService;
+import com.fredfmelo.authservice.auth.security.AuthenticatedUser;
+import com.fredfmelo.authservice.auth.security.RsaKeyProvider;
+import com.fredfmelo.authservice.config.ServiceConfig;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
@@ -24,20 +23,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtService {
 
-    private static final long EXPIRATION_SECONDS = 3600;
-
-    private static final String PRIVATE_KEY_SECRET = "auth-service-private-key";
-    private static final String PUBLIC_KEY_SECRET = "auth-service-public-key";
-
-    private final SecretsManagerService secretsManagerService;
+    private final ServiceConfig serviceConfig;
+    private final RsaKeyProvider rsaKeyProvider;
 
     private PrivateKey privateKey;
     private PublicKey publicKey;
 
     @PostConstruct
     void init() throws Exception {
-        privateKey = loadPrivateKey();
-        publicKey = loadPublicKey();
+        privateKey = rsaKeyProvider.loadPrivateKey();
+        publicKey = rsaKeyProvider.loadPublicKey();
     }
 
     public String generateToken(UserEntity user) {
@@ -48,7 +43,8 @@ public class JwtService {
                 .claim("email", user.getEmail())
                 .claim("role", user.getRole().name())
                 .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plusSeconds(EXPIRATION_SECONDS)))
+                .expiration(Date.from(
+                        now.plusSeconds(serviceConfig.getJwt().getExpirationSeconds())))
                 .signWith(privateKey, Jwts.SIG.RS256)
                 .compact();
     }
@@ -65,36 +61,29 @@ public class JwtService {
         try {
             extractClaims(token);
             return true;
-        } catch (SignatureException ex) {
-            return false;
         } catch (Exception ex) {
             return false;
         }
     }
 
-    private PrivateKey loadPrivateKey() throws Exception {
-        String key = secretsManagerService.getSecret(PRIVATE_KEY_SECRET);
-
-        key = key.replace("-----BEGIN PRIVATE KEY-----", "")
-                .replace("-----END PRIVATE KEY-----", "")
-                .replaceAll("\\s", "");
-
-        byte[] decoded = Base64.getDecoder().decode(key);
-
-        return KeyFactory.getInstance("RSA")
-                .generatePrivate(new PKCS8EncodedKeySpec(decoded));
+    public UUID extractUserId(String token) {
+        return UUID.fromString(extractClaims(token).getSubject());
     }
 
-    private PublicKey loadPublicKey() throws Exception {
-        String key = secretsManagerService.getSecret(PUBLIC_KEY_SECRET);
+    public String extractEmail(String token) {
+        return extractClaims(token).get("email", String.class);
+    }
 
-        key = key.replace("-----BEGIN PUBLIC KEY-----", "")
-                .replace("-----END PUBLIC KEY-----", "")
-                .replaceAll("\\s", "");
+    public Role extractRole(String token) {
+        return Role.valueOf(extractClaims(token).get("role", String.class));
+    }
 
-        byte[] decoded = Base64.getDecoder().decode(key);
+    public AuthenticatedUser extractUser(String token) {
+        Claims claims = extractClaims(token);
 
-        return KeyFactory.getInstance("RSA")
-                .generatePublic(new X509EncodedKeySpec(decoded));
+        return new AuthenticatedUser(
+                UUID.fromString(claims.getSubject()),
+                claims.get("email", String.class),
+                Role.valueOf(claims.get("role", String.class)));
     }
 }
