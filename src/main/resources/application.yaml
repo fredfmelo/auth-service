@@ -17,5 +17,8 @@ aws:
   dynamodb:
     table-name: AUTH_USER
 
+  sns:
+    order-topic-arn: arn:aws:sns:us-east-1:200849340204:order-events
+
 jwt:
   expiration-seconds: 3600

@@ -13,7 +13,11 @@ import org.springframework.stereotype.Service;
 
 import com.fredfmelo.authservice.auth.entity.Role;
 import com.fredfmelo.authservice.auth.entity.UserEntity;
+import com.fredfmelo.authservice.auth.event.UserCreatedEvent;
 import com.fredfmelo.authservice.auth.repository.UserRepository;
+import com.fredfmelo.authservice.auth.repository.UserTransactionRepository;
+import com.fredfmelo.eventdrivencore.outbox.entity.OutboxEntity;
+import com.fredfmelo.eventdrivencore.outbox.service.OutboxService;
 import com.fredfmelo.authservice.auth.security.AuthenticatedUser;
 import com.fredfmelo.authservice.auth.validation.PasswordValidator;
 import com.fredfmelo.authservice.model.LoginRequest;
@@ -31,6 +35,8 @@ import lombok.RequiredArgsConstructor;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final UserTransactionRepository userTransactionRepository;
+    private final OutboxService outboxService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final PasswordValidator passwordValidator;
@@ -48,7 +54,10 @@ public class AuthService {
 
         UserEntity user = buildUser(request);
 
-        userRepository.save(user);
+        UserCreatedEvent event = buildUserCreatedEvent(user);
+        OutboxEntity outbox = outboxService.buildEntity(event);
+
+        userTransactionRepository.save(user, outbox);
 
         return new RegisterResponse()
                 .userId(user.getUserId())
@@ -105,6 +114,13 @@ public class AuthService {
         return user;
     }
 
-    
+    private UserCreatedEvent buildUserCreatedEvent(UserEntity user) {
+        return new UserCreatedEvent(
+                UUID.randomUUID(),
+                UUID.randomUUID().toString(),
+                "USER_CREATED",
+                Instant.now(),
+                user.getUserId());
+    }
 
 }

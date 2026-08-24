@@ -21,8 +21,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.fredfmelo.authservice.auth.entity.Role;
 import com.fredfmelo.authservice.auth.entity.UserEntity;
 import com.fredfmelo.authservice.auth.repository.UserRepository;
+import com.fredfmelo.authservice.auth.repository.UserTransactionRepository;
 import com.fredfmelo.authservice.auth.security.AuthenticatedUser;
 import com.fredfmelo.authservice.auth.validation.PasswordValidator;
+import com.fredfmelo.eventdrivencore.outbox.entity.OutboxEntity;
+import com.fredfmelo.eventdrivencore.outbox.service.OutboxService;
 import com.fredfmelo.authservice.model.LoginRequest;
 import com.fredfmelo.authservice.model.LoginResponse;
 import com.fredfmelo.authservice.model.MeResponse;
@@ -35,6 +38,12 @@ class AuthServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private UserTransactionRepository userTransactionRepository;
+
+    @Mock
+    private OutboxService outboxService;
 
     @Mock
     private JwtService jwtService;
@@ -65,6 +74,9 @@ class AuthServiceTest {
         when(passwordEncoder.encode("Password123"))
                 .thenReturn("hashed-password");
 
+        when(outboxService.buildEntity(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new OutboxEntity());
+
         RegisterResponse response = authService.register(request);
 
         assertThat(response.getEmail()).isEqualTo("test@test.com");
@@ -75,7 +87,7 @@ class AuthServiceTest {
         ArgumentCaptor<UserEntity> captor =
                 ArgumentCaptor.forClass(UserEntity.class);
 
-        verify(userRepository).save(captor.capture());
+        verify(userTransactionRepository).save(captor.capture(), org.mockito.ArgumentMatchers.any(OutboxEntity.class));
 
         UserEntity savedUser = captor.getValue();
 
