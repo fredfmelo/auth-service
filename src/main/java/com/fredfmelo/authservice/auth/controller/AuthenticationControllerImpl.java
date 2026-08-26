@@ -29,6 +29,12 @@ public class AuthenticationControllerImpl implements AuthenticationApi {
     }
 
     @Override
+    public ResponseEntity<RegisterResponse> registerSeller(RegisterRequest registerRequest) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(authService.registerSeller(registerRequest));
+    }
+
+    @Override
     public ResponseEntity<LoginResponse> login(LoginRequest loginRequest) {
         loginRequest.setEmail(loginRequest.getEmail().trim().toLowerCase());
 

@@ -36,6 +36,30 @@ paths:
         "409":
           description: User already exists
 
+  /auth/register/seller:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new seller
+      operationId: registerSeller
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: Seller successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterResponse"
+        "400":
+          description: Invalid request
+        "409":
+          description: User already exists
+
   /auth/login:
     post:
       tags:
@@ -107,6 +131,7 @@ components:
           type: string
           enum:
             - CUSTOMER
+            - SELLER
             - ADMIN
         createdAt:
           type: string

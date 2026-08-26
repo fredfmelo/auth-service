@@ -42,6 +42,14 @@ public class AuthService {
     private final PasswordValidator passwordValidator;
 
     public RegisterResponse register(RegisterRequest request) {
+        return registerUser(request, Role.CUSTOMER);
+    }
+
+    public RegisterResponse registerSeller(RegisterRequest request) {
+        return registerUser(request, Role.SELLER);
+    }
+
+    private RegisterResponse registerUser(RegisterRequest request, Role role) {
         request.setEmail(request.getEmail().trim().toLowerCase());
 
         userRepository.findByEmail(request.getEmail())
@@ -52,7 +60,7 @@ public class AuthService {
 
         passwordValidator.validate(request.getPassword());
 
-        UserEntity user = buildUser(request);
+        UserEntity user = buildUser(request, role);
 
         UserCreatedEvent event = buildUserCreatedEvent(user);
         OutboxEntity outbox = outboxService.buildEntity(event);
@@ -62,7 +70,7 @@ public class AuthService {
         return new RegisterResponse()
                 .userId(user.getUserId())
                 .email(user.getEmail())
-                .role(RoleEnum.CUSTOMER)
+                .role(RoleEnum.fromValue(role.name()))
                 .createdAt(OffsetDateTime.ofInstant(user.getCreatedAt(), ZoneOffset.UTC));
     }
 
@@ -93,7 +101,7 @@ public class AuthService {
                 .role(user.role().name());
     }
 
-    private UserEntity buildUser(RegisterRequest request) {
+    private UserEntity buildUser(RegisterRequest request, Role role) {
 
         UUID userId = UUID.randomUUID();
 
@@ -108,7 +116,7 @@ public class AuthService {
         user.setUserId(userId);
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setRole(Role.CUSTOMER);
+        user.setRole(role);
         user.setCreatedAt(Instant.now());
 
         return user;
